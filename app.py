@@ -1,32 +1,54 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
 
-# पन्नों की बुनियादी सेटिंग
-st.set_page_config(page_title="Smart AI Prompt", page_icon="🚀", layout="centered")
+# 1. पेज की सेटिंग और फ़ुटर/मेनू को छिपाना
+st.set_page_config(page_title="Smart AI Prompt Generator", page_icon="🚀")
 
-# अपनी जेमिनी चाबी को यहाँ जोड़ना
-GOOGLE_API_KEY = "AQ.Ab8RN6KQnDUujoRUG_cw8B2hG5S9WU9UcIm4sqPNGUdBGSLdFg"
-genai.configure(api_key=GOOGLE_API_KEY)
+hide_style = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    </style>
+"""
+st.markdown(hide_style, unsafe_allow_html=True)
 
+# 2. Gemini API क्लाइंट को कनेक्ट करना
+try:
+    client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+except Exception:
+    st.error("कृपया Streamlit डैशबोर्ड के Secrets में GEMINI_API_KEY सेट करें।")
+
+# 3. ऐप का इंटरफ़ेस (UI)
 st.title("🚀 Smart AI Prompt Generator")
 st.write("अपने 3-4 शब्द लिखें और Midjourney के लिए पूरा प्रॉम्प्ट पाएं!")
 
-# यूज़र के लिए इनपुट बॉक्स
-user_ideas = st.text_input("अपने शब्द यहाँ लिखें:", placeholder="जैसे: neon samurai portrait")
+user_input = st.text_input("अपने शब्द यहाँ लिखें:", placeholder="जैसे: neon samurai portrait")
 
 if st.button("Generate Professional Prompt"):
-    if user_ideas:
-        with st.spinner("AI सोच रहा है..."):
+    if user_input:
+        with st.spinner("AI आपके लिए प्रॉम्प्ट तैयार कर रहा है..."):
             try:
-                model = genai.GenerativeModel('gemini-1.5-flash')
-                # एआई को दिया जाने वाला खुफिया निर्देश
-                system_instruction = f"तुम एक एक्सपर्ट प्रॉम्प्ट इंजीनियर हो। यूज़र के इस छोटे आइडिया '{user_ideas}' को Midjourney और Stable Diffusion के लिए एक बेहद खूबसूरत और डिटेल्ड प्रॉम्प्ट में बदलो। उसमें 8k क्वालिटी, सिनेमैटिक लाइटिंग, कैमरा एंगल और आर्ट स्टाइल खुद से जोड़ना। जवाब में सिर्फ तैयार प्रॉम्प्ट ही देना, कोई और फालतू बात मत लिखना।"
+                # AI को प्रॉम्प्ट इंजीनियरिंग के लिए निर्देश देना
+                system_instruction = (
+                    "You are an expert Midjourney prompt engineer. Take the user's short input "
+                    "and expand it into a highly detailed, cinematic, and professional Midjourney prompt. "
+                    "Include details like lighting, camera lens, style, resolution, and aspect ratios (e.g., --ar 16:9 --v 6.0). "
+                    "Output ONLY the final prompt inside a code block, nothing else."
+                )
                 
-                response = model.generate_content(system_instruction)
+                # Gemini Model से रिस्पॉन्स मांगना
+                response = client.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=f"User keywords: {user_input}\nSystem Instruction: {system_instruction}"
+                )
                 
-                st.success("आपका प्रॉम्प्ट तैयार है! 👇")
-                st.code(response.text) # इससे यूज़र एक क्लिक में कॉपी कर पाएगा
+                # स्क्रीन पर रिजल्ट दिखाना जिसे यूजर आसानी से कॉपी कर सके
+                st.success("आपका Midjourney प्रॉम्प्ट तैयार है!")
+                st.code(response.text, language="text")
+                
             except Exception as e:
-                st.error("कुछ तकनीकी दिक्कत आ गई है, कृपया दोबारा जांचें।")
+                st.error(f"प्रॉम्प्ट जनरेट करने में समस्या आई: {e}")
     else:
-        st.warning("कृपया पहले कुछ शब्द टाइप करें!")
+        st.warning("कृपया पहले इनपुट बॉक्स में कुछ शब्द लिखें!")
+
