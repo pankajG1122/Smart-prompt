@@ -36,8 +36,8 @@ if st.button("Generate Professional Prompt"):
                     "Output ONLY the final prompt inside a code block, nothing else."
                 )
                 
-                # यहाँ हमने 'gemini-1.5-flash-latest' कर दिया है जो पुरानी लाइब्रेरी में काम करेगा
-                model = genai.GenerativeModel('gemini-1.5-flash-latest')
+                # यहाँ हमने 'gemini-pro' कर दिया है जो 100% इस वर्शन में सपोर्टेड है
+                model = genai.GenerativeModel('gemini-pro')
                 response = model.generate_content(f"{system_instruction}\n\nUser keywords: {user_input}")
                 
                 st.success("आपका Midjourney प्रॉम्प्ट तैयार है!")
@@ -47,3 +47,4 @@ if st.button("Generate Professional Prompt"):
                 st.error(f"प्रॉम्प्ट जनरेट करने में समस्या आई: {e}")
     else:
         st.warning("कृपया पहले इनपुट बॉक्स में कुछ शब्द लिखें!")
+        
