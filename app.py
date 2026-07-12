@@ -13,7 +13,7 @@ hide_style = """
 """
 st.markdown(hide_style, unsafe_allow_html=True)
 
-# 2. पुरानी लाइब्रेरी के अनुसार API कनेक्ट करना
+# 2. API कनेक्ट करना
 try:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 except Exception:
@@ -36,8 +36,8 @@ if st.button("Generate Professional Prompt"):
                     "Output ONLY the final prompt inside a code block, nothing else."
                 )
                 
-                # पुराना मॉडल नाम इस्तेमाल करना
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                # यहाँ हमने एरर ठीक करने के लिए मॉडल का सही पाथ दिया है
+                model = genai.GenerativeModel('models/gemini-1.5-flash')
                 response = model.generate_content(f"{system_instruction}\n\nUser keywords: {user_input}")
                 
                 st.success("आपका Midjourney प्रॉम्प्ट तैयार है!")
@@ -47,3 +47,4 @@ if st.button("Generate Professional Prompt"):
                 st.error(f"प्रॉम्प्ट जनरेट करने में समस्या आई: {e}")
     else:
         st.warning("कृपया पहले इनपुट बॉक्स में कुछ शब्द लिखें!")
+        
